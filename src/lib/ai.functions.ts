@@ -4,15 +4,15 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 async function runText(system: string, prompt: string) {
   const { streamText } = await import("ai");
-  const { getGateway, AI_MODEL } = await import("./ai/model.server");
+  const { getGateway, RESPONSES_OPTIONS } = await import("./ai/model.server");
   const gw = getGateway();
-  const result = streamText({ model: gw(AI_MODEL), system, prompt });
+  const result = streamText({ model: gw.model(), instructions: system, prompt, providerOptions: RESPONSES_OPTIONS });
   return await result.text;
 }
 
 async function runJson<T>(system: string, prompt: string): Promise<T> {
   const { extractJson } = await import("./ai/model.server");
-  const text = await runText(system + "\nRespond with JSON only, no commentary.", prompt);
+  const text = await runText(system + "\nRespond with valid JSON only, no commentary.", prompt);
   return extractJson<T>(text);
 }
 

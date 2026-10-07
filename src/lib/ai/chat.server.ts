@@ -2,7 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { convertToModelMessages, stepCountIs, streamText, tool, type UIMessage } from "ai";
 import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
-import { AI_MODEL, getGateway } from "./model.server";
+import { getGateway, RESPONSES_OPTIONS } from "./model.server";
 import { getLovableAiGatewayRunId, withLovableAiGatewayRunIdHeader } from "./run-id.server";
 
 const json = (status: number, error: string) =>
@@ -38,15 +38,15 @@ export async function handleChat(request: Request) {
       description: "Create a task in the user's planner.",
       inputSchema: z.object({
         title: z.string(),
-        priority: z.enum(["high", "medium", "low"]).default("medium"),
-        due_at: z.string().nullable().optional().describe("ISO 8601 deadline"),
-        duration_minutes: z.number().int().positive().optional(),
-        notes: z.string().optional(),
+        priority: z.enum(["high", "medium", "low"]),
+        due_at: z.string().nullable().describe("ISO 8601 deadline or null"),
+        duration_minutes: z.number().int().nullable(),
+        notes: z.string().nullable(),
       }),
       execute: async (t) => {
         const { data, error } = await supabase
           .from("tasks")
-          .insert({ ...t, due_at: t.due_at || null, user_id: userId, source: "chat" })
+          .insert({ title: t.title, priority: t.priority, notes: t.notes, due_at: t.due_at || null, duration_minutes: t.duration_minutes || 60, user_id: userId, source: "chat" })
           .select("id,title,priority,due_at")
           .single();
         if (error) throw new Error(error.message);
@@ -79,7 +79,7 @@ export async function handleChat(request: Request) {
       description: "Write an email and save it as a draft in the Email Generator. Write the full subject and body yourself.",
       inputSchema: z.object({
         tone: z.enum(["formal", "friendly", "persuasive"]),
-        recipient: z.string().optional(),
+        recipient: z.string().nullable(),
         subject: z.string(),
         body: z.string().describe("Plain text body with greeting and sign-off"),
         instructions: z.string().describe("Short summary of what the email is for"),
@@ -98,19 +98,22 @@ export async function handleChat(request: Request) {
 
   const gw = getGateway(getLovableAiGatewayRunId(request));
   const result = streamText({
-    model: gw(AI_MODEL),
-    system: `You are Nexora, a sharp, friendly AI productivity assistant inside a workspace with a Task Planner, Email Generator and Schedule. Current time: ${now}.
+    model: gw.model(),
+    providerOptions: RESPONSES_OPTIONS,
+    abortSignal: request.signal,
+    instructions: `You are Nexora, a sharp, friendly AI productivity assistant inside a workspace with a Task Planner, Email Generator and Schedule. Current time: ${now}.
 - When the user asks to remember, do, plan or follow up on something, create tasks with createTask (choose sensible priority and deadline).
 - When asked to write/draft/reply to an email, use draftEmail, then show a short summary and mention it's saved in Emails.
 - When the user pastes an email or notes, offer or create the actionable tasks found in it.
 - Use listTasks before answering questions about their workload. Be concise; use markdown lists.`,
     messages: await convertToModelMessages(messages),
     tools,
-    stopWhen: stepCountIs(6),
+    stopWhen: stepCountIs(50),
   });
 
   const response = result.toUIMessageStreamResponse({
     originalMessages: messages,
+    sendReasoning: true,
     generateMessageId: () => crypto.randomUUID(),
     onFinish: async ({ messages: all }) => {
       const rows = all.map((m) => ({
