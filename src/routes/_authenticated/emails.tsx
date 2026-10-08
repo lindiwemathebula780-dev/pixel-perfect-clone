@@ -70,7 +70,7 @@ function EmailsPage() {
   }
 
   async function run(kind: "gen" | "refine") {
-    if (!instructions.trim()) return toast.error("Describe what the email should say");
+    if (!instructions.trim()) { toast.error("Describe what the email should say"); return; }
     setBusy(kind);
     try {
       const r = await gen({
@@ -96,7 +96,7 @@ function EmailsPage() {
     setBusy("tasks");
     try {
       const found = await extract({ data: { text: `${subject}\n\n${body}`, now: new Date().toISOString() } });
-      if (!found.length) return toast.info("No action items found");
+      if (!found.length) { toast.info("No action items found"); return; }
       await create.mutateAsync(
         found.map((t) => ({
           title: t.title,

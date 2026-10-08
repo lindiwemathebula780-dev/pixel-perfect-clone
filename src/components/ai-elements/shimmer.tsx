@@ -56,7 +56,7 @@ const ShimmerComponent = ({
         className
       )}
       initial={{ backgroundPosition: "100% center" }}
-      style={
+      style={(
         {
           "--spread": `${dynamicSpread}px`,
           backgroundImage:

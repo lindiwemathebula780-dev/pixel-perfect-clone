@@ -45,7 +45,7 @@ function ChatPage() {
 
   async function newThread() {
     const { data, error } = await supabase.from("threads").insert({}).select("id").single();
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     navigate({ to: "/chat/$threadId", params: { threadId: data.id } });
   }
 
