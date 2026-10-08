@@ -15,7 +15,7 @@ export const RESPONSES_OPTIONS = {
 };
 
 export function getGateway(runId?: string) {
-  const key = process.env.LOVABLE_API_KEY;
+  const key = process.env["LOVABLE_API_KEY"];
   if (!key) throw new Error("AI is not configured");
   const runIdFetch = createLovableAiGatewayRunIdFetch(runId);
   const provider = createOpenAI({
@@ -33,7 +33,7 @@ export function getGateway(runId?: string) {
 
 export function extractJson<T = unknown>(text: string): T {
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/);
-  const raw = fenced ? fenced[1] : text;
+  const raw = fenced?.[1] ?? text;
   const start = raw.search(/[[{]/);
   const end = Math.max(raw.lastIndexOf("}"), raw.lastIndexOf("]"));
   return JSON.parse(raw.slice(start, end + 1)) as T;

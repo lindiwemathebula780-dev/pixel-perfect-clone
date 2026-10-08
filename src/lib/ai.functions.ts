@@ -1,6 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+
+async function db() {
+  const { createClient } = await import("@supabase/supabase-js");
+  return createClient<import("@/integrations/supabase/types").Database>(process.env["SUPABASE_URL"]!, process.env["SUPABASE_PUBLISHABLE_KEY"]!, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+}
 
 async function runText(system: string, prompt: string) {
   const { streamText } = await import("ai");
@@ -25,7 +31,6 @@ const emailSchema = z.object({
 });
 
 export const generateEmail = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((d) => emailSchema.parse(d))
   .handler(async ({ data }) => {
     const prompt = [
@@ -54,7 +59,6 @@ const taskOut = z.array(
 );
 
 export const extractTasks = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ text: z.string().min(1).max(10000), now: z.string() }).parse(d))
   .handler(async ({ data }) => {
     const out = await runJson<unknown>(
@@ -65,9 +69,9 @@ export const extractTasks = createServerFn({ method: "POST" })
   });
 
 export const prioritizeTasks = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ now: z.string() }).parse(d))
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data }) => {
+    const context = { supabase: await db() };
     const { data: tasks, error } = await context.supabase
       .from("tasks")
       .select("id,title,notes,priority,due_at,duration_minutes")
@@ -88,11 +92,11 @@ export const prioritizeTasks = createServerFn({ method: "POST" })
   });
 
 export const planSchedule = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((d) =>
     z.object({ now: z.string(), range: z.enum(["day", "week"]), tzOffsetMinutes: z.number() }).parse(d),
   )
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data }) => {
+    const context = { supabase: await db() };
     const { data: tasks, error } = await context.supabase
       .from("tasks")
       .select("id,title,priority,due_at,duration_minutes")

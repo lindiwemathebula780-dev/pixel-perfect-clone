@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 
 export function TaskRow({ task, compact }: { task: Task; compact?: boolean }) {
   const { update, remove } = useTaskMutations();
-  const p = priorityStyles[task.priority] ?? priorityStyles.medium;
+  const p = priorityStyles[task.priority] ?? priorityStyles["medium"]!;
   return (
     <div className="group flex items-center gap-3 rounded-lg px-3 py-3 transition-colors hover:bg-line/25">
       <span className={cn("h-9 w-1 shrink-0 rounded-full", task.done ? "bg-line" : p.bar)} />

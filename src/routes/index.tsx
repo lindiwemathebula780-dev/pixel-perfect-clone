@@ -1,7 +1,5 @@
-import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { CalendarDays, CheckSquare, Mail, MessageSquare } from "lucide-react";
-import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/")({
@@ -32,11 +30,6 @@ const FEATURES = [
 ];
 
 function Landing() {
-  const { user } = useAuth();
-  const navigate = useNavigate();
-  useEffect(() => {
-    if (user) navigate({ to: "/dashboard" });
-  }, [user, navigate]);
 
   return (
     <main className="grid-bg min-h-screen">
@@ -49,7 +42,7 @@ function Landing() {
           Nexora turns conversations into tasks, tasks into a schedule, and instructions into ready-to-send emails.
         </p>
         <Button asChild size="lg" className="mt-8">
-          <Link to="/auth">Open your workspace</Link>
+          <Link to="/dashboard">Open your workspace</Link>
         </Button>
         <div className="mt-16 grid w-full gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {FEATURES.map((f) => (

@@ -9,16 +9,9 @@ const json = (status: number, error: string) =>
   new Response(JSON.stringify({ error }), { status, headers: { "Content-Type": "application/json" } });
 
 export async function handleChat(request: Request) {
-  const token = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
-  if (!token) return json(401, "Unauthorized");
-
-  const supabase = createClient<Database>(process.env.SUPABASE_URL!, process.env.SUPABASE_PUBLISHABLE_KEY!, {
-    global: { headers: { Authorization: `Bearer ${token}` } },
+  const supabase = createClient<Database>(process.env["SUPABASE_URL"]!, process.env["SUPABASE_PUBLISHABLE_KEY"]!, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
-  const { data: userData, error: userErr } = await supabase.auth.getUser(token);
-  if (userErr || !userData.user) return json(401, "Unauthorized");
-  const userId = userData.user.id;
 
   const body = (await request.json()) as { messages?: UIMessage[]; threadId?: string; now?: string };
   const parsed = z
@@ -46,7 +39,7 @@ export async function handleChat(request: Request) {
       execute: async (t) => {
         const { data, error } = await supabase
           .from("tasks")
-          .insert({ title: t.title, priority: t.priority, notes: t.notes, due_at: t.due_at || null, duration_minutes: t.duration_minutes || 60, user_id: userId, source: "chat" })
+          .insert({ title: t.title, priority: t.priority, notes: t.notes, due_at: t.due_at || null, duration_minutes: t.duration_minutes || 60, source: "chat" })
           .select("id,title,priority,due_at")
           .single();
         if (error) throw new Error(error.message);
@@ -87,7 +80,7 @@ export async function handleChat(request: Request) {
       execute: async (e) => {
         const { data, error } = await supabase
           .from("emails")
-          .insert({ ...e, user_id: userId })
+          .insert({ ...e })
           .select("id,subject,body,tone,recipient")
           .single();
         if (error) throw new Error(error.message);
@@ -118,7 +111,6 @@ export async function handleChat(request: Request) {
     onFinish: async ({ messages: all }) => {
       const rows = all.map((m) => ({
         thread_id: threadId,
-        user_id: userId,
         ui_id: m.id,
         role: m.role,
         message: m as unknown as Database["public"]["Tables"]["messages"]["Insert"]["message"],

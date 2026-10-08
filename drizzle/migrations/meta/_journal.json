@@ -8,6 +8,13 @@
       "when": 1791375276516,
       "tag": "0000_workspace_core",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791443243532,
+      "tag": "0001_open_workspace_no_signin",
+      "breakpoints": true
     }
   ]
 }
