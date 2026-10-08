@@ -8,7 +8,6 @@ import { TaskRow } from "@/components/task-row";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
-import { displayName, useAuth } from "@/lib/auth";
 import { useEmails, useTasks, useThreads } from "@/lib/data";
 import { scheduleTone, tasksOn, weekDays } from "@/lib/schedule";
 import { cn } from "@/lib/utils";
@@ -31,7 +30,6 @@ const greeting = () => {
 };
 
 function Dashboard() {
-  const { user } = useAuth();
   const tasks = useTasks();
   const emails = useEmails();
   const threads = useThreads();
@@ -46,15 +44,15 @@ function Dashboard() {
 
   async function ask(e: React.FormEvent) {
     e.preventDefault();
-    if (!q.trim()) return;
+    if (!q.trim()) return undefined;
     const { data, error } = await supabase.from("threads").insert({}).select("id").single();
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return undefined; }
     navigate({ to: "/chat/$threadId", params: { threadId: data.id }, search: { q: q.trim() } });
   }
 
   return (
     <main className="mx-auto max-w-[1440px] px-4 py-8 md:px-8">
-      <PageHeader eyebrow={format(new Date(), "EEEE · MMMM d")} title={`${greeting()}, ${displayName(user)}.`}>
+      <PageHeader eyebrow={format(new Date(), "EEEE · MMMM d")} title={`${greeting()}.`}>
         {(["day", "week"] as const).map((r) => (
           <button key={r} onClick={() => setRange(r)} className={cn("chip bg-panel", range === r && "chip-active")}>
             {r === "day" ? "Daily" : "Weekly"}

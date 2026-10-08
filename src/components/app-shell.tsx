@@ -1,9 +1,6 @@
-import { Link, useNavigate } from "@tanstack/react-router";
-import { CalendarDays, CheckSquare, LayoutGrid, LogOut, Mail, MessageSquare } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { CalendarDays, CheckSquare, LayoutGrid, Mail, MessageSquare } from "lucide-react";
 import type { ReactNode } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { displayName } from "@/lib/auth";
-import type { User } from "@supabase/supabase-js";
 import mark from "@/assets/nexora-mark.png";
 
 const NAV = [
@@ -14,9 +11,7 @@ const NAV = [
   { to: "/schedule", label: "Schedule", icon: CalendarDays },
 ] as const;
 
-export function AppShell({ user, children }: { user: User; children: ReactNode }) {
-  const navigate = useNavigate();
-  const name = displayName(user);
+export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="grid-bg min-h-screen pb-20 md:pb-0">
       <header className="sticky top-0 z-20 border-b border-line/80 bg-void/85 backdrop-blur-md">
@@ -42,23 +37,7 @@ export function AppShell({ user, children }: { user: User; children: ReactNode }
               </Link>
             ))}
           </nav>
-          <div className="flex items-center gap-3">
-            <div className="hidden text-right sm:block">
-              <p className="text-[12px] font-medium text-foreground/80">{name}</p>
-              <p className="text-[11px] text-muted-foreground">{user.email}</p>
-            </div>
-            <div className="brand-orb size-9 rounded-full outline-1 -outline-offset-1 outline-foreground/10" />
-            <button
-              aria-label="Sign out"
-              onClick={async () => {
-                await supabase.auth.signOut();
-                navigate({ to: "/auth" });
-              }}
-              className="rounded-md p-2 text-muted-foreground hover:bg-line/50 hover:text-foreground"
-            >
-              <LogOut className="size-4" />
-            </button>
-          </div>
+          <div className="brand-orb size-9 rounded-full outline-1 -outline-offset-1 outline-foreground/10" />
         </div>
       </header>
       {children}
