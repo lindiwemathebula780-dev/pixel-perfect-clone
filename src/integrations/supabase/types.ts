@@ -24,7 +24,7 @@ export type Database = {
           subject: string
           tone: string
           updated_at: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           body?: string
@@ -35,7 +35,7 @@ export type Database = {
           subject?: string
           tone?: string
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
         }
         Update: {
           body?: string
@@ -46,7 +46,7 @@ export type Database = {
           subject?: string
           tone?: string
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -58,7 +58,7 @@ export type Database = {
           role: string
           thread_id: string
           ui_id: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -67,7 +67,7 @@ export type Database = {
           role: string
           thread_id: string
           ui_id: string
-          user_id?: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -76,7 +76,7 @@ export type Database = {
           role?: string
           thread_id?: string
           ui_id?: string
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -100,7 +100,7 @@ export type Database = {
           scheduled_at: string | null
           source: string
           title: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -113,7 +113,7 @@ export type Database = {
           scheduled_at?: string | null
           source?: string
           title: string
-          user_id?: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -126,7 +126,7 @@ export type Database = {
           scheduled_at?: string | null
           source?: string
           title?: string
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -136,21 +136,21 @@ export type Database = {
           id: string
           title: string
           updated_at: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
           id?: string
           title?: string
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
           id?: string
           title?: string
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
